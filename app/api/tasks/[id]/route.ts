@@ -1,32 +1,21 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
+import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> } | any
 ) {
   try {
-    const resolvedParams = await params;
-    const { id } = resolvedParams;
+    const { id } = await (params as Promise<{ id: string }> | { id: string });
     const body = await request.json();
-    const { status } = body;
-
-    if (!id || !status) {
-      return NextResponse.json({ error: "Missing required fields: id and status" }, { status: 400 });
-    }
-
-    const result = await db.execute({
-      sql: "UPDATE tasks SET status = ? WHERE id = ? RETURNING *",
-      args: [status, parseInt(id, 10)],
+    
+    const task = await prisma.task.update({
+      where: { id: parseInt(id) },
+      data: { status: body.status }
     });
-
-    if (result.rows.length === 0) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(result.rows[0]);
+    
+    return NextResponse.json(task);
   } catch (error) {
-    console.error("Failed to update task:", error);
     return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
   }
 }
