@@ -23,7 +23,12 @@ export default function ClientList({
     fetch("/api/clients")
       .then((res) => res.json())
       .then((data) => {
-        setClients(data);
+        if (Array.isArray(data)) {
+          setClients(data);
+        } else {
+          setClients([]);
+          console.error("API returned error:", data);
+        }
         setLoading(false);
       })
       .catch((err) => {

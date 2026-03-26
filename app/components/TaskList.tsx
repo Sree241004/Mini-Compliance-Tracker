@@ -34,7 +34,12 @@ export default function TaskList({
     fetch(`/api/tasks?clientId=${clientId}`)
       .then((res) => res.json())
       .then((data) => {
-        setTasks(data);
+        if (Array.isArray(data)) {
+          setTasks(data);
+        } else {
+          setTasks([]);
+          console.error("API returned error:", data);
+        }
         setLoading(false);
       })
       .catch((err) => {
