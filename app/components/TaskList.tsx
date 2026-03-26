@@ -31,7 +31,7 @@ export default function TaskList({
 
   const loadTasks = () => {
     setLoading(true);
-    fetch(\`/api/tasks?clientId=\${clientId}\`)
+    fetch(`/api/tasks?clientId=${clientId}`)
       .then((res) => res.json())
       .then((data) => {
         setTasks(data);
@@ -50,7 +50,7 @@ export default function TaskList({
   const toggleTaskStatus = async (taskId: number, currentStatus: string) => {
     const newStatus = currentStatus === "Pending" ? "Completed" : "Pending";
     try {
-      const res = await fetch(\`/api/tasks/\${taskId}\`, {
+      const res = await fetch(`/api/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -161,10 +161,7 @@ export default function TaskList({
             return (
               <div
                 key={task.id}
-                className={\`bg-white rounded-lg shadow-sm p-5 border-l-4 transition-all duration-300 relative group
-                  \${task.status === "Completed" ? "border-green-500 opacity-75" : 
-                    overdue ? "border-red-500 ring-1 ring-red-100" : "border-yellow-400"}
-                \`}
+                className={`bg-white rounded-lg shadow-sm p-5 border-l-4 transition-all duration-300 relative group ${task.status === "Completed" ? "border-green-500 opacity-75" : overdue ? "border-red-500 ring-1 ring-red-100" : "border-yellow-400"}`}
               >
                 {/* Overdue Badge */}
                 {overdue && (
@@ -179,7 +176,7 @@ export default function TaskList({
                   </span>
                 </div>
                 
-                <h3 className={\`text-lg font-bold mt-2 \${task.status === "Completed" ? "text-gray-500 line-through" : "text-gray-900"}\`}>
+                <h3 className={`text-lg font-bold mt-2 ${task.status === "Completed" ? "text-gray-500 line-through" : "text-gray-900"}`}>
                   {task.title}
                 </h3>
                 
@@ -190,16 +187,13 @@ export default function TaskList({
                 <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-gray-100 text-sm">
                   <div>
                     <div className="text-gray-500 text-xs">Due Date</div>
-                    <div className={\`font-medium \${overdue ? "text-red-600 font-bold" : "text-gray-800"}\`}>
+                    <div className={`font-medium ${overdue ? "text-red-600 font-bold" : "text-gray-800"}`}>
                       {new Date(task.due_date).toLocaleDateString()}
                     </div>
                   </div>
                   <div>
                     <div className="text-gray-500 text-xs">Priority</div>
-                    <div className={\`font-medium
-                      \${task.priority === "High" ? "text-orange-600" : 
-                        task.priority === "Medium" ? "text-blue-600" : "text-gray-600"}
-                    \`}>
+                    <div className={`font-medium ${task.priority === "High" ? "text-orange-600" : task.priority === "Medium" ? "text-blue-600" : "text-gray-600"}`}>
                       {task.priority}
                     </div>
                   </div>
@@ -208,12 +202,7 @@ export default function TaskList({
                 <div className="mt-4 pt-3 flex justify-end">
                   <button
                     onClick={() => toggleTaskStatus(task.id, task.status)}
-                    className={\`text-sm font-medium px-4 py-2 rounded transition-colors
-                      \${task.status === "Completed" 
-                        ? "bg-gray-100 text-gray-700 hover:bg-gray-200" 
-                        : "bg-green-100 text-green-700 hover:bg-green-200"
-                      }
-                    \`}
+                    className={`text-sm font-medium px-4 py-2 rounded transition-colors ${task.status === "Completed" ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
                   >
                     {task.status === "Completed" ? "Mark Pending" : "Mark Completed"}
                   </button>
