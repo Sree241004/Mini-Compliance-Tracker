@@ -21,7 +21,10 @@ export default function ClientList({
 
   useEffect(() => {
     fetch("/api/clients")
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Server error: " + res.status);
+        return res.json();
+      })
       .then((data) => {
         if (Array.isArray(data)) {
           setClients(data);

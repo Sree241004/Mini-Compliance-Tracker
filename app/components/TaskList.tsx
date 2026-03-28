@@ -32,7 +32,10 @@ export default function TaskList({
   const loadTasks = () => {
     setLoading(true);
     fetch(`/api/tasks?clientId=${clientId}`)
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Server error: " + res.status);
+        return res.json();
+      })
       .then((data) => {
         if (Array.isArray(data)) {
           setTasks(data);
