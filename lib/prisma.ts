@@ -5,9 +5,19 @@ const prismaClientSingleton = () => {
 }
 
 declare global {
-  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>
+  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton> | null
 }
 
-export const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
+let prismaInstance;
 
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+try {
+  prismaInstance = globalThis.prismaGlobal ?? prismaClientSingleton();
+  if (process.env.NODE_ENV !== 'production') {
+    globalThis.prismaGlobal = prismaInstance;
+  }
+} catch (error) {
+  console.error("PrismaClient Initialization Failed locally. Proceeding with null to allow mock fallbacks.", error);
+  prismaInstance = null;
+}
+
+export const prisma = prismaInstance as ReturnType<typeof prismaClientSingleton>;
