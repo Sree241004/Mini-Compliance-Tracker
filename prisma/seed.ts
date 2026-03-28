@@ -5,6 +5,12 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('Seeding the database with Prisma...')
 
+  const count = await prisma.client.count()
+  if (count > 0) {
+    console.log('Database already seeded. Skipping...')
+    return
+  }
+
   // Insert Clients
   const acmeCorp = await prisma.client.create({
     data: {

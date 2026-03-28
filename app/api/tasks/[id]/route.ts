@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
@@ -9,12 +9,12 @@ export async function PATCH(
     const { id } = await (params as Promise<{ id: string }> | { id: string });
     const body = await request.json();
     
-    const rs = await db.execute({
-      sql: "UPDATE Task SET status = ? WHERE id = ? RETURNING *",
-      args: [body.status, parseInt(id)]
+    const task = await prisma.task.update({
+      where: { id: parseInt(id) },
+      data: { status: body.status }
     });
     
-    return NextResponse.json(rs.rows[0]);
+    return NextResponse.json(task);
   } catch (error) {
     return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
   }

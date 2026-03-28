@@ -1,6 +1,6 @@
-# Mini Compliance Tracker (LibSQL / Turso Edition)
+# Mini Compliance Tracker (Supabase + Prisma Edition)
 
-A robust web application to track compliance tasks for multiple clients. Migrated to robust **SQLite** functionality using **@libsql/client** for standard serverless deployments and edge compatibility.
+A robust web application to track compliance tasks for multiple clients. Powered by **Supabase PostgreSQL** and **Prisma ORM** for standard serverless deployments.
 
 ## Core Features
 1. **Client Management:** View a list of clients (seeded data).
@@ -15,21 +15,28 @@ A robust web application to track compliance tasks for multiple clients. Migrate
 ## Tech Stack
 - **Framework:** Next.js 16.2.1 (App Router)
 - **Styling:** Tailwind CSS v4
-- **Database:** Serverless SQLite natively using `@libsql/client` (Turso / local SQLite compatible)
+- **ORM:** Prisma v7 compatible configurations
+- **Database:** PostgreSQL (Supabase) fully compatible with Serverless Edge environments using connection pooling
 
 ---
 
-## 🚀 Setting Up the Database
+## 🚀 Setting Up Supabase & Prisma
 
-This application uses a local SQLite database for development, which can be easily swapped to a remote Turso database for production.
+You must connect the application to a PostgreSQL database such as Supabase before developing. 
 
-To deploy to production, create a [Turso Project](https://turso.tech) and add the following to your `.env` file:
+1. Create a [Supabase Project](https://supabase.com).
+2. Go to your Project -> **Project Settings** -> **Database**.
+3. Scroll down to **Connection string** and select **URI**. Check the "Use connection pooling" box.
+4. Open the `.env` file in the root of this project and paste your actual Database URL strings replacing the placeholders. 
+
+In your `.env` file, you need TWO environment variables for Prisma:
 ```env
-# Production Turso Connection String
-TURSO_DATABASE_URL="..."
-TURSO_AUTH_TOKEN="..."
+# The Transaction pooler URL (Ends in port 6543)
+DATABASE_URL="postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+# The Direct Session URL (Ends in port 5432)
+DIRECT_URL="postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
 ```
-*(If left blank, the app will gracefully default to using a local `file:local.db` inside your project directory.)*
 
 ---
 
@@ -41,9 +48,10 @@ TURSO_AUTH_TOKEN="..."
    ```
 
 2. **Initialize Database and Seed Data:**
-   Run the setup script which will create the required tables and seed the application with test clients and tasks:
+   Now that your `.env` is setup, push the schema to Supabase and seed the test clients.
    ```bash
-   node scripts/init-db.mjs
+   npx prisma db push
+   npx prisma db seed
    ```
 
 3. **Start the Development Server:**
@@ -56,11 +64,11 @@ TURSO_AUTH_TOKEN="..."
 
 ## ⚡ Vercel Deployment Instructions
 
-Deploying this application to Vercel is seamless:
+Deploying this application to Vercel is seamless and guarantees data availability due to custom build automations!
 
 1. Connect your GitHub repository inside the Vercel Dashboard.
 2. Before clicking Deploy, expand the **Environment Variables** section.
-3. Add the **`TURSO_DATABASE_URL`** and **`TURSO_AUTH_TOKEN`** keys from your Turso dashboard.
+3. Add the exact same **`DATABASE_URL`** and **`DIRECT_URL`** strings you used locally into Vercel.
 4. Click **Deploy**.
 
-*Vercel has been configured securely (via `package.json`) to automatically run the UI build processes.* Your deployment will effortlessly connect to your remote SQLite database!
+*Vercel has been configured securely (via `package.json`) to automatically run `prisma generate`, `prisma db push`, and `prisma db seed` during the build sequence. This ensures the necessary databases are set up and seeded with fallback data before your Vercel URL goes live, solving the "missing clients" issue!*
