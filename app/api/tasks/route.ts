@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get("clientId");
 
-    const tasks = clientId
-      ? await prisma.task.findMany({ where: { client_id: parseInt(clientId) }, orderBy: { due_date: 'asc' } })
-      : await prisma.task.findMany({ orderBy: { due_date: 'asc' } });
+    let rs;
+    if (clientId) {
+      rs = await db.execute({
+        sql: "SELECT * FROM Task WHERE client_id = ? ORDER BY due_date ASC",
+        args: [parseInt(clientId)]
+      });
+    } else {
+      rs = await db.execute("SELECT * FROM Task ORDER BY due_date ASC");
+    }
 
-    return NextResponse.json(tasks);
+    return NextResponse.json(rs.rows);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch tasks" }, { status: 500 });
   }
@@ -19,18 +25,20 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const task = await prisma.task.create({
-      data: {
-        title: body.title,
-        description: body.description,
-        category: body.category,
-        due_date: new Date(body.due_date),
-        priority: body.priority,
-        client_id: body.client_id,
-        status: "Pending" // explicitly default to Pending
-      }
+    const rs = await db.execute({
+      sql: `INSERT INTO Task (title, description, category, due_date, status, priority, client_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+      args: [
+        body.title, 
+        body.description || null, 
+        body.category, 
+        body.due_date, 
+        "Pending", 
+        body.priority || "Medium", 
+        body.client_id
+      ]
     });
-    return NextResponse.json(task, { status: 201 });
+    return NextResponse.json(rs.rows[0], { status: 201 });
   } catch (error) {
     console.error("Failed to create task", error)
     return NextResponse.json({ error: "Failed to create task", details: String(error) }, { status: 500 });
