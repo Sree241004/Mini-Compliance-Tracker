@@ -1,6 +1,6 @@
-# Mini Compliance Tracker (Supabase + Prisma Edition)
+# Mini Compliance Tracker (LibSQL / Turso Edition)
 
-A robust web application to track compliance tasks for multiple clients. Migrated to robust **Supabase PostgreSQL** and **Prisma ORM** for standard serverless deployments.
+A robust web application to track compliance tasks for multiple clients. Migrated to robust **SQLite** functionality using **@libsql/client** for standard serverless deployments and edge compatibility.
 
 ## Core Features
 1. **Client Management:** View a list of clients (seeded data).
@@ -15,60 +15,52 @@ A robust web application to track compliance tasks for multiple clients. Migrate
 ## Tech Stack
 - **Framework:** Next.js 16.2.1 (App Router)
 - **Styling:** Tailwind CSS v4
-- **ORM:** Prisma v6/v7 compatible configurations
-- **Database:** PostgreSQL (Supabase) fully compatible with Serverless Edge environments using connection pooling
+- **Database:** Serverless SQLite natively using `@libsql/client` (Turso / local SQLite compatible)
 
 ---
 
-## 🚀 Setting Up Supabase & Prisma
+## 🚀 Setting Up the Database
 
-You must connect the application to a PostgreSQL database such as Supabase before developing. 
+This application uses a local SQLite database for development, which can be easily swapped to a remote Turso database for production.
 
-1. Create a [Supabase Project](https://supabase.com).
-2. Go to your Project -> **Project Settings** -> **Database**.
-3. Scroll down to **Connection string** and select **URI**. Check the "Use connection pooling" box.
-4. Open the `.env` file in the root of this project and paste your actual Database URL strings replacing the placeholders. 
-
-In your `.env` file, you need TWO environment variables for Prisma:
-\`\`\`env
-# The Transaction pooler URL (Ends in port 6543)
-DATABASE_URL="postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true"
-
-# The Direct Session URL (Ends in port 5432)
-DIRECT_URL="postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
-\`\`\`
+To deploy to production, create a [Turso Project](https://turso.tech) and add the following to your `.env` file:
+```env
+# Production Turso Connection String
+TURSO_DATABASE_URL="..."
+TURSO_AUTH_TOKEN="..."
+```
+*(If left blank, the app will gracefully default to using a local `file:local.db` inside your project directory.)*
 
 ---
 
 ## Local Development Instructions
 
 1. **Install Dependencies:**
-   \`\`\`bash
+   ```bash
    npm install
-   \`\`\`
+   ```
 
 2. **Initialize Database and Seed Data:**
-   Now that your `.env` is setup, push the schema to Supabase and seed the test clients.
-   \`\`\`bash
-   npx prisma db push
-   npm run prisma db seed
-   \`\`\`
+   Run the setup script which will create the required tables and seed the application with test clients and tasks:
+   ```bash
+   node scripts/init-db.mjs
+   ```
 
 3. **Start the Development Server:**
-   \`\`\`bash
+   ```bash
    npm run dev
-   \`\`\`
+   ```
    Navigate to [http://localhost:3000](http://localhost:3000).
 
 ---
 
 ## ⚡ Vercel Deployment Instructions
 
-Deploying this application to Vercel is seamless if you configure the environment correctly.
+Deploying this application to Vercel is seamless:
 
 1. Connect your GitHub repository inside the Vercel Dashboard.
 2. Before clicking Deploy, expand the **Environment Variables** section.
-3. Add the exact same **`DATABASE_URL`** and **`DIRECT_URL`** strings you used locally into Vercel.
+3. Add the **`TURSO_DATABASE_URL`** and **`TURSO_AUTH_TOKEN`** keys from your Turso dashboard.
 4. Click **Deploy**.
 
-*Vercel has been configured securely (via `package.json`) to automatically run `prisma generate`, `prisma db push`, and the `next build` processes directly inside its CD pipeline.* Your deployment will effortlessly connect to your cloud database!
+*Vercel has been configured securely (via `package.json`) to automatically run the UI build processes.* Your deployment will effortlessly connect to your remote SQLite database!
